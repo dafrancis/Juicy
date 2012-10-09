@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <title>IE6 Simulator</title>
+        <meta charset="utf-8">
+        <style type="text/css">
+        canvas {cursor: none;}
+        html, body {padding 0; margin: 0;}
+        </style>
+    </head>
+    <body>
+        <!-- with apologies to Mr Doob -->
+        <!-- http://mrdoob.com/lab/javascript/effects/ie6/ -->
+        <div id="container">
+            <canvas id="my_canvas" width="640" height="480"></canvas>
+        </div>
+        <script src="../juicy.js"></script>
+        <script>
+Juicy.imageLoad({
+    ie: "images/ie-crash.png"
+});
+
+Juicy.run({clear: false, time: 10}, function () {
+    this.drawMouse("ie");
+});
+
+Juicy.canvas.width = document.width;
+Juicy.canvas.height = document.height;
+        </script>
+    </body>
+</html>

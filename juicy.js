@@ -20,7 +20,7 @@
                 options = {};
             }
             backupCanvas = document.getElementsByTagName("canvas")[0];
-            this.clear = options.clear || true;
+            this.clear = options.clear === undefined ? true : options.clear;
             this.canvas = options.canvas || backupCanvas;
             this.canvas.addEventListener("mousemove", this._mouse.mousemove);
             this.canvas.addEventListener("mousedown", this._mouse.mousedown);
@@ -49,10 +49,7 @@
          * click : determines if mouse is clicked
          * down : determines if the mouse is pressed
          */
-        mouse: {
-            x: 0,
-            y: 0
-        },
+        mouse: {},
         /**
          * Mouse event functions
          */
