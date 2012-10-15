@@ -56,9 +56,11 @@ and Animated are for animated images. Images for animated are imported as a
 spritesheet.
 
     function Explosion() {
-        this.img = Juicy.images.explosion;
+        this.img = "explosion";
         this.width = 64;
         this.height = 64;
+        this.x = Mouse.x;
+        this.y = Mouse.y;
         this.repeat = false;
     }
 

@@ -279,6 +279,9 @@
      * @this {Base}
      */
     Base.prototype.step = function () {
+        if (this.img) {
+            this.drawImage();
+        }
         this.draw();
         this.change();
     };
@@ -314,6 +317,35 @@
      */
     Base.prototype.isClicked = function () {
         return Juicy.mouse.click && this.isHover();
+    };
+
+    /**
+     * Draws an image on the canvas
+     *
+     * @this {Base}
+     */
+    Base.prototype.drawImage = function () {
+        Juicy.ctx.drawImage(Juicy.images[this.img], this.x, this.y, this.width, this.height);
+    };
+
+    /**
+     * Some people are scared of JavaScript's prototypal inheritance.
+     * "It doesn't look right" they say. Extend more or less does it in a way
+     * that seems the most natural, in a way that's similar to Spine or
+     * Backbone.
+     *
+     * @this {Base}
+     */
+    Base.extend = function (options) {
+        var option, This = this, klass = options.init || function () {};
+        klass.prototype = new This();
+        for (option in options) {
+            if (options.hasOwnProperty(option) && option !== "init") {
+                klass.prototype[option] = options[option];
+            }
+        }
+        klass.extend = this.extend;
+        return klass;
     };
 
     Juicy.Base = Base;
@@ -451,12 +483,13 @@
      * @this {Animated}
      */
     Animated.prototype.animate = function () {
+        var img = Juicy.images[this.img];
         this.offsetX += this.width;
-        if (this.offsetX === this.img.width) {
+        if (this.offsetX === img.width) {
             this.offsetX = 0;
             this.offsetY += this.height;
         }
-        if (this.offsetY === this.img.height) {
+        if (this.offsetY === img.height) {
             if (this.repeat) {
                 this.offsetY = 0;
             } else {
@@ -472,7 +505,7 @@
      */
     Animated.prototype.drawFrame = function () {
         var img, offx, offy, width, height, x, y;
-        img = this.img;
+        img = Juicy.images[this.img];
         offx = this.offsetX;
         offy = this.offsetY;
         width = this.width;
