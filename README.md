@@ -55,16 +55,16 @@ There are two main types of models. Base and Animated. Base is for basic objects
 and Animated are for animated images. Images for animated are imported as a
 spritesheet.
 
-    function Explosion() {
-        this.img = "explosion";
-        this.width = 64;
-        this.height = 64;
-        this.x = Mouse.x;
-        this.y = Mouse.y;
-        this.repeat = false;
-    }
-
-    Explosion.prototype = new Juicy.Animated();
+    var Explosion = Juicy.Animated.extend({
+        img: "explosion",
+        width: 64,
+        height: 64,
+        repeat: false,
+        init: function () {
+            this.x = Mouse.x;
+            this.y = Mouse.y;
+        }
+    });
 
 #### Collections
 
@@ -72,14 +72,12 @@ Collections are for more than one of the main model. So you can have a
 collection of particles. It requires a model attribute and an optional filter
 attribute:
 
-    function Particles() {
-        this.model = Particle;
-        this.filter = function (particle) {
-            return !particle.isOutOfBounds();
+    var Particles = Juicy.Collection.extend({
+        model: Particle,
+        filter: function (particle) {
+            return !particle.isOutOfBounds()
         }
-    }
-    
-    Particles.prototype = new Juicy.Collection();
+    });
 
 ### Cool so what's next?
 
@@ -93,6 +91,7 @@ What I'll probably add in the future:
 * A much more effective way to do text.
 * Something to go from one state (or "main loop") to another. Like have multiple
 "main loops" that can be switched to whenever instead of one big one.
+* Assertions to give hints as and when someone forgets a needed attribute.
 
 ### License
 
