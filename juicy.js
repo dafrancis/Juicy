@@ -356,83 +356,69 @@
      * using and also a filter if objects are to be removed from the collection.
      *
      * e.g.
-     * function Particles() {
-     *     this.model = Particle;
-     *     this.filter = function (particle) {
+     * var Particles = Juicy.Collection.extend({
+     *     model: Particle,
+     *     filter: function (particle) {
      *         return !particle.isOutOfBounds();
      *     }
-     * }
-     *
-     * Particles.prototype = new Juicy.Collection();
+     * });
      *
      * @module
      * @this {Collection}
      */
-    function Collection() {
-        this.collection = [];
-    }
-
-    /**
-     * Collection extends Base
-     *
-     * @this {Collection}
-     */
-    Collection.prototype = new Base();
-
-    /**
-     * Step for collections
-     *
-     * @this {Collection}
-     */
-    Collection.prototype.step = function () {
-        this.drawCollection();
-        this.filterCollection();
-        this.draw();
-        this.change();
-    };
-
-    /**
-     * Runs the step function for all the objects in the collection
-     *
-     * @this {Collection}
-     */
-    Collection.prototype.drawCollection = function () {
-        this.collection.forEach(function (object) {
-            object.step();
-        });
-    };
-
-    /**
-     * Runs the filter for the collection if there is a filter
-     *
-     * @this {Collection}
-     */
-    Collection.prototype.filterCollection = function () {
-        if (this.filter) {
-            this.collection = this.collection.filter(this.filter);
+    Juicy.Collection = Base.extend({
+        init: function () {
+            this.collection = [];
+        },
+        /**
+         * Step for collections
+         *
+         * @this {Collection}
+         */
+        step: function () {
+            this.drawCollection();
+            this.filterCollection();
+            this.draw();
+            this.change();
+        },
+        /**
+         * Runs the step function for all the objects in the collection
+         *
+         * @this {Collection}
+         */
+        drawCollection: function () {
+            this.collection.forEach(function (object) {
+                object.step();
+            });
+        },
+        /**
+         * Runs the filter for the collection if there is a filter
+         *
+         * @this {Collection}
+         */
+        filterCollection: function () {
+            if (this.filter) {
+                this.collection = this.collection.filter(this.filter);
+            }
+        },
+        /**
+         * Adds a new object (depending on model) for the collection
+         *
+         * @this {Collection}
+         */
+        add: function () {
+            this.collection.push(new this.model());
+        },
+        /**
+         * Removes an object depending on the index
+         *
+         * @this {Collection}
+         * @param {Number} index The index of the object in the collection;
+         */
+        remove: function (index) {
+            return this.collection.splice(index, 1);
         }
-    };
-
-    /**
-     * Adds a new object (depending on model) for the collection
-     *
-     * @this {Collection}
-     */
-    Collection.prototype.add = function () {
-        this.collection.push(new this.model());
-    };
-
-    /**
-     * Removes an object depending on the index
-     *
-     * @this {Collection}
-     * @param {Number} index The index of the object in the collection;
-     */
-    Collection.prototype.remove = function (index) {
-        return this.collection.splice(index, 1);
-    };
-
-    Juicy.Collection = Collection;
+    });
 
     /**
      * Animated Class. Like Base but used for images which are animated.
@@ -440,82 +426,68 @@
      * You can repeat an animation by setting repeat to true.
      *
      * e.g.
-     * function Explosion() {
-     *     this.img = Juicy.images.explosion;
-     *     this.width = 64;
-     *     this.height = 64;
-     *     this.repeat = false;
-     * }
-     *
-     * Explosion.prototype = new Juicy.Animated();
+     * var Explosion = Juicy.Animated.extend({
+     *     img: "explosion",
+     *     width: 64,
+     *     height: 64,
+     *     repeat: false
+     * });
      *
      * @module
      * @this {Animated}
      */
-    function Animated() {
-        this.offsetX = 0;
-        this.offsetY = 0;
-        this.isFinished = false;
-    }
-
-    /**
-     * Animated extends Base
-     *
-     * @this {Animated}
-     */
-    Animated.prototype = new Base();
-
-    /**
-     * Step function
-     *
-     * @this {Animated}
-     */
-    Animated.prototype.step = function () {
-        this.drawFrame();
-        this.animate();
-        this.draw();
-        this.change();
-    };
-
-    /**
-     * Sets the next frame to be animated
-     *
-     * @this {Animated}
-     */
-    Animated.prototype.animate = function () {
-        var img = Juicy.images[this.img];
-        this.offsetX += this.width;
-        if (this.offsetX === img.width) {
-            this.offsetX = 0;
-            this.offsetY += this.height;
-        }
-        if (this.offsetY === img.height) {
-            if (this.repeat) {
-                this.offsetY = 0;
-            } else {
-                this.isFinished = true;
+    Juicy.Animated = Juicy.Base.extend({
+        offsetX: 0,
+        offsetY: 0,
+        isFinished: false,
+        /**
+         * Step function
+         *
+         * @this {Animated}
+         */
+        step: function () {
+            this.drawFrame();
+            this.animate();
+            this.draw();
+            this.change();
+        },
+        /**
+         * Sets the next frame to be animated
+         *
+         * @this {Animated}
+         */
+        animate: function () {
+            var img = Juicy.images[this.img];
+            this.offsetX += this.width;
+            if (this.offsetX === img.width) {
+                this.offsetX = 0;
+                this.offsetY += this.height;
             }
+            if (this.offsetY === img.height) {
+                if (this.repeat) {
+                    this.offsetY = 0;
+                } else {
+                    this.isFinished = true;
+                }
+            }
+        },
+        /**
+         * Draws the current frame
+         *
+         * @this {Animated}
+         */
+        drawFrame: function () {
+            var img, offx, offy, width, height, x, y;
+            img = Juicy.images[this.img];
+            offx = this.offsetX;
+            offy = this.offsetY;
+            width = this.width;
+            height = this.height;
+            x = this.x;
+            y = this.y;
+            Juicy.ctx.drawImage(img, offx, offy, width, height, x, y, width, height);
         }
-    };
-
-    /**
-     * Draws the current frame
-     *
-     * @this {Animated}
-     */
-    Animated.prototype.drawFrame = function () {
-        var img, offx, offy, width, height, x, y;
-        img = Juicy.images[this.img];
-        offx = this.offsetX;
-        offy = this.offsetY;
-        width = this.width;
-        height = this.height;
-        x = this.x;
-        y = this.y;
-        Juicy.ctx.drawImage(img, offx, offy, width, height, x, y, width, height);
-    };
-
-    Juicy.Animated = Animated;
+    });
 
     this.Juicy = Juicy;
 }.call(this));
