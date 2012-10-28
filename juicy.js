@@ -32,9 +32,11 @@
                 if (self.clear) {
                     self.ctx.clearRect(0, 0, self.canvas.width, self.canvas.height);
                 }
-                for (collection in self.collections) {
-                    if (self.collections.hasOwnProperty(collection)) {
-                        self.collections[collection].step();
+                if (self.percentLoaded() === "100%") {
+                    for (collection in self.collections) {
+                        if (self.collections.hasOwnProperty(collection)) {
+                            self.collections[collection].step();
+                        }
                     }
                 }
                 callback.call(self);
@@ -98,15 +100,27 @@
          * @param {Object} obj Object of names -> path of all the sounds to be used
          */
         audioLoad: function (obj) {
-            var sound, audio, stop = function () {
+            var sound, audio, stop, loaded, self = this;
+            stop = function () {
                 this.pause();
                 this.currentTime = 0;
             };
+            loaded = function () {
+                return new function() {
+                    if (!this._loaded) {
+                        self._loading -= 1;
+                        this._loaded = 1;
+                    }
+                };
+            };
             for (sound in obj) {
                 if (obj.hasOwnProperty(sound)) {
-                    audio = new Audio(obj[sound]);
+                    audio = new Audio();
                     audio.stop = stop;
+                    audio.oncanplaythrough = loaded();
+                    audio.src = obj[sound];
                     this.sounds[sound] = audio;
+                    self._loading += 1;
                 }
             }
         },
@@ -117,14 +131,57 @@
          * @param {Object} obj Object of names -> path of all the images to be used
          */
         imageLoad: function (obj) {
-            var img, image;
+            var img, image, loaded, self = this;
+            loaded = function() {
+                self._loading -= 1;
+                this._loaded = 1;
+            };
             for (image in obj) {
                 if (obj.hasOwnProperty(image)) {
                     img = new Image();
                     img.src = obj[image];
+                    img.onload = loaded;
                     this.images[image] = img;
+                    self._loading += 1;
                 }
             }
+        },
+        /**
+         * Count of items still loading
+         */
+        _loading: 0,
+        /**
+         * Returns the percentage of items which are still loading
+         */
+        percentLoaded: function () {
+            var totalItems, imgLen, soundLen, percent;
+            imgLen = Object.keys(this.images).length;
+            soundLen = Object.keys(this.sounds).length;
+            totalItems = imgLen + soundLen;
+            percent = (totalItems - this._loading) / totalItems;
+            percent *= 10000;
+            percent = Math.round(percent) / 100;
+            return percent + "%";
+        },
+        /**
+         * Returns an object containing lists of items which are still loading
+         */
+        filesLoading: function () {
+            var img, snd, imgLoad = [], sndLoad = [];
+            for (img in this.images) {
+                if (!this.images[img]._loaded) {
+                    imgLoad.push(img);
+                }
+            }
+            for (snd in this.sounds) {
+                if (!this.sounds[snd]._loaded) {
+                    sndLoad.push(snd);
+                }
+            }
+            return {
+                sounds: sndLoad,
+                images: imgLoad
+            };
         },
         /**
          * Sets the application to fullscreen mode. This needs to be bound to a
