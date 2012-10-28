@@ -87,7 +87,6 @@ game or something and find some things to abstract on the way.
 
 What I'll probably add in the future:
 
-* A preloader
 * A much more effective way to do text.
 * Something to go from one state (or "main loop") to another. Like have multiple
 "main loops" that can be switched to whenever instead of one big one.
