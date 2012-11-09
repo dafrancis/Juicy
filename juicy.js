@@ -26,6 +26,12 @@
             this.canvas.addEventListener("mousedown", this._mouse.mousedown);
             this.canvas.addEventListener("mouseup", this._mouse.mouseup);
             this.ctx = this.canvas.getContext("2d");
+            this.ctx.drawCircle = function (x, y, radius) {
+                this.beginPath();
+                this.arc(x, y, radius, 0, Math.PI * 2, true);
+                this.closePath();
+                this.fill();
+            };
             this.canvas.ctx = this.ctx;
             setInterval(function () {
                 var collection;
@@ -281,8 +287,51 @@
                 y = this.mouse.y - (img.height / 2);
             }
             this.ctx.drawImage(img, x, y);
+        },
+        Key: {
+            _pressed: {},
+
+            LEFT: 37,
+            UP: 38,
+            RIGHT: 39,
+            DOWN: 40,
+
+            W: 87,
+            S: 83,
+            A: 65,
+            D: 68,
+
+            SPACE: 32,
+          
+            isDown: function(keyCode) {
+                return this._pressed[keyCode];
+            },
+          
+            onKeydown: function(event) {
+                this._pressed[event.keyCode] = true;
+            },
+          
+            onKeyup: function(event) {
+                delete this._pressed[event.keyCode];
+            }
+        },
+        _items: {},
+        getOrCreate: function (key, callback) {
+            if (!this._items.hasOwnProperty(key)) {
+                this._items[key] = callback();
+            }
+            return this._items[key];
         }
     };
+
+    window.addEventListener('keyup', function(event) {
+        Juicy.Key.onKeyup(event);
+    }, false);
+
+    window.addEventListener('keydown', function(event) {
+        //event.preventDefault();
+        Juicy.Key.onKeydown(event);
+    }, false);
 
     /**
      * Bind for going in and out of fullscreen
@@ -314,6 +363,7 @@
      */
     function Base() {
         // Something goes here
+        this.autodraw = true;
     }
 
     /**
@@ -336,7 +386,7 @@
      * @this {Base}
      */
     Base.prototype.step = function () {
-        if (this.img) {
+        if (this.img && this.autodraw) {
             this.drawImage();
         }
         this.draw();
@@ -349,10 +399,11 @@
      * @this {Base}
      */
     Base.prototype.isOutOfBounds = function () {
-        var self = this, compare = function (attr, compare) {
-            return self[attr] + self[compare] > Juicy.canvas[compare] || self[attr] < -self[compare];
-        };
-        return compare("x", "width") || compare("y", "height");
+        var tooRight = this.x > Juicy.canvas.width,
+            tooLeft = this.x + this.width < 0,
+            tooUp = this.y + this.height < 0,
+            tooDown = this.y > Juicy.canvas.height;
+        return tooRight || tooDown || tooUp || tooLeft;
     };
 
     /**
