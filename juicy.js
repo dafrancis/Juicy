@@ -324,12 +324,17 @@
         }
     };
 
+    /**
+     * Bind for keydup events
+     */
     window.addEventListener('keyup', function(event) {
         Juicy.Key.onKeyup(event);
     }, false);
 
+    /**
+     * Bind for keydown events
+     */
     window.addEventListener('keydown', function(event) {
-        //event.preventDefault();
         Juicy.Key.onKeydown(event);
     }, false);
 
@@ -435,6 +440,27 @@
     Base.prototype.drawImage = function () {
         Juicy.ctx.drawImage(Juicy.images[this.img], this.x, this.y, this.width, this.height);
     };
+    /**
+     * Checks if two objects are colliding with each other
+     *
+     * @this {Base}
+     * @param {object} obj The object to check collisions with
+     */
+    Base.prototype.isColliding = function (obj) {
+        var x1 = this.x, y1 = this.y, w1 = this.width, h1 = this.height,
+            x2 = obj.x, y2 = obj.y, w2 = obj.width, h2 = obj.height;
+        if (w2 !== Infinity && w1 !== Infinity) {
+            w2 += x2;
+            w1 += x1;
+            if (isNaN(w1) || isNaN(w2) || x2 > w1 || x1 > w2) return false;
+        }
+        if (y2 !== Infinity && h1 !== Infinity) {
+            h2 += y2;
+            h1 += y1;
+            if (isNaN(h1) || isNaN(y2) || y2 > h1 || y1 > h2) return false;
+        }
+        return this;
+    };
 
     /**
      * Some people are scared of JavaScript's prototypal inheritance.
@@ -525,6 +551,25 @@
          */
         remove: function (index) {
             return this.collection.splice(index, 1);
+        },
+        /**
+         * Checks if an object collides with anything in the collection
+         * Returns the object it's colliding with if otherwise it returns
+         * false.
+         *
+         * @this {Collection}
+         * @param {object} The object to see if it's colliding with anything in
+         *                 the collection
+         */
+        isColliding: function (obj) {
+            var i, collider;
+            for (i = 0; i < this.collection.length; i++) {
+                collider = this.collection[i].isColliding(obj);
+                if (collider) {
+                    return collider;
+                }
+            }
+            return false;
         }
     });
 
