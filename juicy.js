@@ -264,16 +264,17 @@
                 y: 1
             };
         },
-        drawText: function (text, x, y, color, font, space) {
-            var self = this;
+        drawText: function (text, x, y, color, font, maxWidth) {
+            var space, self = this;
             if (typeof text === "string") {
                 text = text.split("\n");
             }
-            space = space || 50;
             this.ctx.fillStyle = color || "black";
             this.ctx.font = font || "12px sans-serif";
-            text.forEach(function (str) {
-                self.ctx.fillText(str, x, y);
+            maxWidth = maxWidth || this.canvas.width - x;
+            space = +(this.ctx.font.match(/(\d+)px/)[1] || 12);
+            text.forEach(function (line) {
+                y = wrapText(Juicy.ctx, line, x, y, maxWidth, space);
                 y += space;
             });
         },
@@ -323,6 +324,27 @@
             return this._items[key];
         }
     };
+
+    function wrapText(context, text, x, y, maxWidth, lineHeight) {
+        var words = text.split(' ');
+        var line = '';
+
+        for(var n = 0; n < words.length; n++) {
+            var testLine = line + words[n] + ' ';
+            var metrics = context.measureText(testLine);
+            var testWidth = metrics.width;
+            if(testWidth > maxWidth) {
+                context.fillText(line, x, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+            }
+            else {
+                line = testLine;
+            }
+        }
+        context.fillText(line, x, y);
+        return y;
+    }
 
     /**
      * Bind for keydup events
@@ -593,14 +615,19 @@
         offsetX: 0,
         offsetY: 0,
         isFinished: false,
+        stepStart: 0,
+        stepFrequency: 1,
         /**
          * Step function
          *
          * @this {Animated}
          */
         step: function () {
+            this.stepStart += 1;
             this.drawFrame();
-            this.animate();
+            if (this.stepStart % this.stepFrequency === 0) {
+                this.animate();
+            }
             this.draw();
             this.change();
         },
@@ -612,11 +639,11 @@
         animate: function () {
             var img = Juicy.images[this.img];
             this.offsetX += this.width;
-            if (this.offsetX === img.width) {
+            if (this.offsetX == img.width) {
                 this.offsetX = 0;
                 this.offsetY += this.height;
             }
-            if (this.offsetY === img.height) {
+            if (this.offsetY == img.height) {
                 if (this.repeat) {
                     this.offsetY = 0;
                 } else {
