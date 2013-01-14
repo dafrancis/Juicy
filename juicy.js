@@ -22,6 +22,7 @@
             backupCanvas = document.getElementsByTagName("canvas")[0];
             this.clear = options.clear === undefined ? true : options.clear;
             this.canvas = options.canvas || backupCanvas;
+            this.state = options.state;
             this.canvas.addEventListener("mousemove", this._mouse.mousemove);
             this.canvas.addEventListener("mousedown", this._mouse.mousedown);
             this.canvas.addEventListener("mouseup", this._mouse.mouseup);
@@ -38,14 +39,19 @@
                 if (self.clear) {
                     self.ctx.clearRect(0, 0, self.canvas.width, self.canvas.height);
                 }
-                if (self.percentLoaded() === "100%") {
+                if (self.percentLoaded() === "100%" || self.percentLoaded() === "NaN%") {
                     for (collection in self.collections) {
                         if (self.collections.hasOwnProperty(collection)) {
                             self.collections[collection].step();
                         }
                     }
                 }
-                callback.call(self);
+                if (self.state) {
+                    self.states[self.state].call(self);
+                }
+                if (callback) {
+                    callback.call(self);
+                }
                 Juicy.mouse.click = false;
             }, options.time || 30);
         },
@@ -223,6 +229,15 @@
                 }
             }
         },
+        states: {},
+        setupStates: function (states) {
+            var state, self = this;
+            for (state in states) {
+                if (states.hasOwnProperty(state)) {
+                    self.states[state] = states[state];
+                }
+            }
+        },
         /**
          * Ratio for fullscreen mode
          */
@@ -317,8 +332,8 @@
             }
         },
         _items: {},
-        getOrCreate: function (key, callback) {
-            if (!this._items.hasOwnProperty(key)) {
+        getOrCreate: function (key, callback, force) {
+            if (!this._items.hasOwnProperty(key) || force) {
                 this._items[key] = callback();
             }
             return this._items[key];
@@ -452,6 +467,26 @@
      */
     Base.prototype.isClicked = function () {
         return Juicy.mouse.click && this.isHover();
+    };
+
+    /**
+     * Returns wether object currently has the mousedown on it
+     *
+     * @this {Base}
+     */
+    Base.prototype.isMouseDown = function () {
+        return Juicy.mouse.isDown && this.isHover();
+    };
+
+    /**
+     * Returns wether object is currently being dragged
+     *
+     * @this {Base}
+     */
+    Base.prototype.isDragged = function () {
+        var isDragged = this.isMouseDown() || (this._dragged && Juicy.mouse.isDown);
+        this._dragged = isDragged;
+        return isDragged;
     };
 
     /**

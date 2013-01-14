@@ -87,9 +87,7 @@ game or something and find some things to abstract on the way.
 
 What I'll probably add in the future:
 
-* A much more effective way to do text.
-* Something to go from one state (or "main loop") to another. Like have multiple
-"main loops" that can be switched to whenever instead of one big one.
+* A much more effective way to do text. (still not happy with this)
 * Assertions to give hints as and when someone forgets a needed attribute.
 * Some proper docstrings
 
